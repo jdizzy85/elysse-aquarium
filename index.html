@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Elysse's Aquarium 🦎</title>
+<style>
+:root{--c1:#bdeaff;--c2:#7fc8f8;--pink:#ff9ec7;--ink:#4a3b6b;--card:#fffaf3;--yellow:#ffd966;--mint:#9be8c8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+html,body{margin:0;height:100%;overflow:hidden;background:#d9f1ff;font-family:"Baloo 2","Comic Sans MS","Chalkboard SE","Trebuchet MS",system-ui,sans-serif;color:var(--ink)}
+#app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 8px env(safe-area-inset-bottom) 8px;gap:8px;max-width:1100px;margin:0 auto}
+#top{display:flex;align-items:center;gap:8px;padding-top:8px;flex-wrap:wrap}
+.pill{background:var(--card);border-radius:22px;padding:6px 12px;font-weight:800;font-size:20px;box-shadow:0 3px 0 #e6d3f5;display:flex;align-items:center;gap:6px;white-space:nowrap}
+#lvl{flex:1;min-width:200px;flex-direction:column;align-items:stretch;gap:2px;padding:6px 12px}
+#lvl .row{display:flex;justify-content:space-between;font-size:17px}
+.bar{height:16px;background:#eadcf7;border-radius:10px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#ff9ec7,#ffd966);border-radius:10px;transition:width .4s}
+.sbtn{width:48px;height:48px;border-radius:50%;border:0;background:var(--card);font-size:24px;box-shadow:0 3px 0 #e6d3f5;cursor:pointer}
+#tank{position:relative;flex:1;min-height:200px;border-radius:30px;overflow:hidden;border:7px solid #fff;box-shadow:0 6px 0 #c9b6e8,0 0 0 3px #e7d9fb;background:linear-gradient(180deg,var(--c1),var(--c2))}
+#tank .layer{position:absolute;inset:0;pointer-events:none}
+.rays{background:repeating-linear-gradient(105deg,rgba(255,255,255,.0) 0 60px,rgba(255,255,255,.22) 60px 100px);animation:sway 9s ease-in-out infinite alternate}
+@keyframes sway{to{transform:translateX(40px)}}
+.sand{position:absolute;left:0;right:0;bottom:0;height:12%;background:linear-gradient(180deg,#ffe9b8,#f7cf8a);border-radius:50% 50% 0 0/30% 30% 0 0}
+.decor{position:absolute;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.12));animation:dsway 4s ease-in-out infinite alternate;transform-origin:bottom center}
+@keyframes dsway{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+.cr{position:absolute;left:0;top:0;cursor:pointer;will-change:transform}
+.cr .flip{transition:transform .3s}
+.cr .bob{animation:bob 2s ease-in-out infinite alternate;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.15))}
+@keyframes bob{from{transform:translateY(-3px) rotate(-3deg)}to{transform:translateY(3px) rotate(3deg)}}
+.tag{position:absolute;left:50%;transform:translateX(-50%);top:-20px;font-size:13px;font-weight:800;background:rgba(255,255,255,.85);border-radius:10px;padding:0 6px;white-space:nowrap;pointer-events:none}
+.hungry{position:absolute;right:-6px;top:-8px;font-size:22px;animation:pulse .8s infinite alternate;pointer-events:none}
+@keyframes pulse{to{transform:scale(1.3)}}
+.algae{position:absolute;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(120,200,90,.85),rgba(80,160,70,.65) 60%,rgba(80,160,70,0) 72%);cursor:pointer;pointer-events:auto;display:flex;align-items:center;justify-content:center;font-size:20px;animation:pulse 1.6s infinite alternate}
+.algae.gone{animation:poof .4s forwards}
+@keyframes poof{to{transform:scale(1.8);opacity:0}}
+.cbub{position:absolute;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.95),rgba(255,255,255,.35));border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;pointer-events:auto;animation:bob 1.4s ease-in-out infinite alternate}
+.bub{position:absolute;bottom:-20px;border-radius:50%;background:rgba(255,255,255,.45);border:1.5px solid rgba(255,255,255,.8);animation:rise linear forwards}
+@keyframes rise{to{transform:translateY(-110vh) translateX(20px)}}
+.flake{position:absolute;top:-10px;font-size:16px;animation:fall 1.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(80vh) rotate(200deg);opacity:.2}}
+.pop{position:absolute;font-weight:900;font-size:22px;color:#fff;text-shadow:0 2px 0 #b07ad6,0 0 6px #b07ad6;pointer-events:none;animation:popup 1.1s forwards;white-space:nowrap}
+@keyframes popup{to{transform:translateY(-60px);opacity:0}}
+#toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(255,255,255,.95);border-radius:20px;padding:8px 16px;font-weight:800;font-size:19px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+#gearbar{position:absolute;right:8px;top:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:50%;justify-content:flex-end;z-index:3;pointer-events:none;font-size:22px}
+#tname{position:absolute;left:12px;top:8px;background:rgba(255,255,255,.8);border-radius:14px;padding:2px 10px;font-weight:800;font-size:15px;z-index:3}
+#light{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;opacity:0;transition:opacity 1s}
+#bar{display:flex;gap:8px;padding-bottom:8px}
+.big{flex:1;height:68px;border:0;border-radius:24px;font-family:inherit;font-weight:900;font-size:19px;color:var(--ink);background:var(--card);box-shadow:0 5px 0 #d9c5f0;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}
+.big span{font-size:28px}
+.big:active,.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #d9c5f0}
+.big.feed{background:#ffe3a3;box-shadow:0 5px 0 #e6c26a}
+.dot{position:absolute;top:4px;right:10px;width:18px;height:18px;border-radius:50%;background:#ff5d8f;border:3px solid #fff;display:none}
+.dot.on{display:block}
+#modal{position:fixed;inset:0;background:rgba(74,59,107,.5);display:none;align-items:center;justify-content:center;z-index:20;padding:12px}
+#modal.on{display:flex}
+#box{background:var(--card);border-radius:30px;width:min(680px,100%);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 8px 0 #cdb8ea;overflow:hidden}
+#mh{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg,#ffc2de,#cfc2ff);font-size:26px;font-weight:900;color:#fff;text-shadow:0 2px 0 rgba(120,80,170,.5)}
+#mx{width:48px;height:48px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:24px;font-weight:900;cursor:pointer}
+#mb{padding:14px;overflow:auto;-webkit-overflow-scrolling:touch}
+.btn{border:0;border-radius:20px;padding:12px 20px;font-family:inherit;font-weight:900;font-size:20px;background:var(--pink);color:#fff;box-shadow:0 4px 0 #d97aa4;cursor:pointer;min-height:52px}
+.btn.green{background:#5fcf9d;box-shadow:0 4px 0 #3da878}
+.btn.gray{background:#c9c0d6;box-shadow:0 4px 0 #a79db8}
+.tabs{display:flex;gap:6px;margin-bottom:10px;overflow:auto}
+.tab{flex:1;min-width:70px;border:0;border-radius:18px;padding:10px 6px;font-family:inherit;font-weight:900;font-size:17px;background:#efe3fb;color:var(--ink);cursor:pointer}
+.tab.on{background:var(--pink);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.item{background:#fff;border-radius:22px;padding:10px;text-align:center;box-shadow:0 3px 0 #eadcf7;display:flex;flex-direction:column;gap:4px;align-items:center}
+.item .em{font-size:46px;line-height:1.1;height:56px;display:flex;align-items:center}
+.item b{font-size:18px}.item small{font-size:14px;opacity:.8;min-height:34px}
+.item.lock{opacity:.55}
+.row2{background:#fff;border-radius:20px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 3px 0 #eadcf7}
+.row2 .em{font-size:38px}.row2 .grow{flex:1;font-weight:800;font-size:18px}
+.hearts{letter-spacing:1px}
+.slide{text-align:center;font-size:24px;font-weight:800;padding:6px}
+.slide .big-em{font-size:90px;line-height:1.1}
+.slide p{margin:8px 0}
+.dots{display:flex;gap:8px;justify-content:center;margin:8px}.dots i{width:12px;height:12px;border-radius:50%;background:#dccdf0}.dots i.on{background:var(--pink)}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0}
+.day{background:#fff;border-radius:16px;padding:6px 2px;text-align:center;font-weight:800;font-size:13px;border:3px solid transparent}
+.day.cur{border-color:var(--pink);background:#fff0f7}.day.done{background:#d7f7e8}
+.day .em{font-size:26px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30}
+.center{text-align:center}
+@media (max-width:600px){.big{font-size:15px;height:62px}.pill{font-size:17px}}
+</style></head>
+<body>
+<div id="app">
+ <div id="top">
+  <div class="pill" id="lvl"><div class="row"><span id="lvltxt">⭐ Level 1</span><span id="xptxt"></span></div><div class="bar"><i id="xpbar"></i></div></div>
+  <div class="pill">🪙 <span id="coins">0</span></div>
+  <div class="pill">💎 <span id="gems">0</span></div>
+  <button class="sbtn" id="mute" aria-label="sound">🔊</button>
+  <button class="sbtn" id="help" aria-label="help">❓</button>
+ </div>
+ <div id="tank">
+  <div class="layer rays"></div>
+  <div class="layer" id="backdecor"></div>
+  <div class="sand"></div>
+  <div class="layer" id="decor"></div>
+  <div class="layer" id="crs" style="pointer-events:auto;z-index:1"></div>
+  <div class="layer" id="bubs"></div>
+  <div class="layer" id="food"></div>
+  <div class="layer" id="algae" style="z-index:2"></div>
+  <div class="layer" id="coinsl" style="z-index:2"></div>
+  <div class="layer" id="pops" style="z-index:4"></div>
+  <div id="light"></div>
+  <div id="tname"></div><div id="gearbar"></div><div id="toast"></div>
+ </div>
+ <div id="bar">
+  <button class="big feed" id="bFeed"><span>🍤</span>Feed</button>
+  <button class="big" id="bShop"><span>🛍️</span>Shop</button>
+  <button class="big" id="bMis"><span>📋</span>Missions<i class="dot" id="dMis"></i></button>
+  <button class="big" id="bDay"><span>🎁</span>Daily<i class="dot" id="dDay"></i></button>
+  <button class="big" id="bPets"><span>🐾</span>Friends</button>
+ </div>
+</div>
+<div id="modal"><div id="box"><div id="mh"><span id="mt"></span><button id="mx">✕</button></div><div id="mb"></div></div></div>
+<canvas id="confetti"></canvas>
+<script>
+"use strict";
+/* ============ DATA ============ */
+const $=id=>document.getElementById(id);
+const SAVE='elysse_aquarium_v1';
+const PETS={
+ axolotl:{n:'Axolotl',e:'🦎',cost:0,lvl:1,t:'swim',sz:46,face:'r',sp:30,d:'Your best friend! Grows with the tank.'},
+ guppy:{n:'Guppy',e:'🐟',cost:30,lvl:1,t:'swim',sz:34,face:'l',sp:55,d:'A tiny speedy swimmer.'},
+ clown:{n:'Clownfish',e:'🐠',cost:60,lvl:1,t:'swim',sz:38,face:'l',sp:45,d:'Orange and super friendly!'},
+ snail:{n:'Snail',e:'🐌',cost:40,lvl:2,t:'floor',sz:30,face:'r',sp:8,d:'Slow and cuddly. Eats yucky algae!'},
+ shrimp:{n:'Shrimp',e:'🦐',cost:70,lvl:2,t:'floor',sz:30,face:'l',sp:22,d:'Hops along the sand.'},
+ bluetang:{n:'Blue Fish',e:'🐟',cost:90,lvl:3,t:'swim',sz:40,face:'l',sp:50,hue:150,d:'Sparkly blue swimmer.'},
+ crab:{n:'Crab',e:'🦀',cost:120,lvl:3,t:'floor',sz:38,face:'l',sp:25,d:'Walks sideways! Snip snip!'},
+ star:{n:'Starfish',e:'⭐',cost:100,lvl:3,t:'floor',sz:36,face:'r',sp:6,d:'A twinkly star on the sand.'},
+ puffer:{n:'Pufferfish',e:'🐡',cost:200,lvl:4,t:'swim',sz:42,face:'l',sp:35,d:'Round and silly!'},
+ seahorse:{n:'Seahorse',e:'',cost:250,lvl:5,t:'swim',sz:44,face:'l',sp:20,svg:'seahorse',d:'Gentle and graceful.'},
+ gold:{n:'Golden Fish',e:'🐠',cost:25,gem:true,lvl:5,t:'swim',sz:42,face:'l',sp:45,hue:-20,sat:1.4,d:'Shiny and special!'},
+ turtle:{n:'Turtle',e:'🐢',cost:350,lvl:6,t:'swim',sz:48,face:'l',sp:18,d:'Slow and wise.'},
+ jelly:{n:'Jellyfish',e:'🪼',cost:400,lvl:7,t:'float',sz:46,face:'r',sp:14,d:'Floaty and glowy.'},
+ octo:{n:'Octopus',e:'🐙',cost:600,lvl:8,t:'floor',sz:50,face:'r',sp:20,d:'Eight wiggly arms!'},
+ squid:{n:'Squid',e:'🦑',cost:700,lvl:9,t:'swim',sz:46,face:'r',sp:35,d:'Zoom zoom!'},
+ lobster:{n:'Lobster',e:'🦞',cost:800,lvl:10,t:'floor',sz:48,face:'l',sp:20,d:'Big claws, big heart.'},
+ dolphin:{n:'Dolphin',e:'🐬',cost:1200,lvl:12,t:'swim',sz:54,face:'l',sp:60,d:'Loves to play!'},
+ shark:{n:'Baby Shark',e:'🦈',cost:1500,lvl:14,t:'swim',sz:54,face:'l',sp:50,d:'Doo doo doo doo!'},
+ whale:{n:'Whale',e:'🐳',cost:2500,lvl:16,t:'swim',sz:62,face:'r',sp:22,d:'The biggest friend!'},
+ mermaid:{n:'Mermaid',e:'🧜‍♀️',cost:80,gem:true,lvl:15,t:'swim',sz:56,face:'r',sp:30,d:'A magical ocean friend.'},
+ goldaxo:{n:'Golden Axolotl',e:'🦎',cost:30,gem:true,lvl:10,t:'swim',sz:46,face:'r',sp:30,hue:45,sat:1.6,d:'A shiny axolotl twin!'},
+ sp_rainbow:{n:'Rainbow Fish',e:'🐠',cost:0,special:true,lvl:1,t:'swim',sz:44,face:'l',sp:45,hue:280,sat:1.5,d:'A streak prize!'},
+ sp_gold:{n:'Sparkle Fish',e:'🐟',cost:0,special:true,lvl:1,t:'swim',sz:44,face:'l',sp:50,hue:-30,sat:2,d:'A streak prize!'}
+};
+const DECOR={
+ weed:{n:'Seaweed',e:'🌿',cost:20,lvl:1,sz:46,d:'Swishy green plant.'},
+ pebble:{n:'Pebbles',e:'🪨',cost:25,lvl:1,sz:34,d:'Smooth little rocks.'},
+ shell:{n:'Seashell',e:'🐚',cost:30,lvl:1,sz:34,d:'Hear the ocean!'},
+ plant:{n:'Leafy Plant',e:'🪴',cost:50,lvl:2,sz:44,d:'A cozy plant.'},
+ coral:{n:'Pink Coral',e:'🪸',cost:60,lvl:2,sz:52,d:'Pretty coral reef.'},
+ castle:{n:'Sand Castle',e:'🏰',cost:150,lvl:3,sz:72,d:'A home for friends.'},
+ chest:{n:'Treasure Chest',e:'🧰',cost:200,lvl:4,sz:48,d:'Shiny treasure!'},
+ anchor:{n:'Anchor',e:'⚓',cost:180,lvl:5,sz:46,d:'Pirate style.'},
+ flower:{n:'Sea Flower',e:'🌸',cost:140,lvl:5,sz:40,d:'Pretty pink bloom.'},
+ boat:{n:'Little Boat',e:'⛵',cost:400,lvl:7,sz:60,d:'Sunk, but cute!'},
+ crystal:{n:'Crystal',e:'💎',cost:500,lvl:8,sz:46,d:'Sparkles bright!'},
+ fountain:{n:'Fountain',e:'⛲',cost:600,lvl:9,sz:70,d:'Splishy splashy.'},
+ house:{n:'Lighthouse',e:'🗼',cost:800,lvl:10,sz:80,d:'Guides the fish.'},
+ tent:{n:'Circus Tent',e:'🎪',cost:700,lvl:11,sz:72,d:'Fun for everyone.'},
+ rainbow:{n:'Rainbow',e:'🌈',cost:1000,lvl:12,sz:84,d:'Over the sea!'},
+ ferris:{n:'Ferris Wheel',e:'🎡',cost:1400,lvl:13,sz:86,d:'Round and round.'},
+ volcano:{n:'Candy Volcano',e:'🌋',cost:1800,lvl:15,sz:84,d:'Bubbly fun.'},
+ sp_castle:{n:'Magic Castle',e:'🏯',special:true,sz:90,hue:300,d:'A streak prize!'},
+ sp_crystal:{n:'Crystal Ball',e:'🔮',special:true,sz:52,d:'A streak prize!'},
+ sp_unicorn:{n:'Unicorn Statue',e:'🦄',special:true,sz:64,d:'A streak prize!'},
+ sp_trophy:{n:'Gold Trophy',e:'🏆',special:true,sz:56,d:'A streak prize!'}
+};
+const GEAR={
+ thermo:{n:'Thermometer',e:'🌡️',cost:60,lvl:1,d:'Keeps an eye on the water. +3 happy',fx:{happy:3}},
+ filter1:{n:'Mini Filter',e:'🌀',cost:80,lvl:2,d:'Less algae grows.',fx:{algae:.75}},
+ lamp1:{n:'Sunny Lamp',e:'💡',cost:100,lvl:2,d:'+10% star points.',fx:{xp:1.1},light:'#fff2a0'},
+ bubbler1:{n:'Bubble Wand',e:'🫧',cost:90,lvl:2,d:'Lots more bubbles!',fx:{bub:1}},
+ heater1:{n:'Cozy Heater',e:'🔥',cost:120,lvl:3,d:'Friends stay happier.',fx:{happy:10}},
+ music:{n:'Music Box',e:'🎵',cost:350,lvl:4,d:'Coin bubbles pop out faster.',fx:{rate:.5}},
+ lamp2:{n:'Rainbow Light',e:'🔆',cost:400,lvl:5,d:'+25% star points.',req:'lamp1',fx:{xp:1.25},light:'#ffb0e0'},
+ filter2:{n:'Super Filter',e:'🌪️',cost:300,lvl:6,d:'Even less algae.',req:'filter1',fx:{algae:.5}},
+ auto:{n:'Auto Feeder',e:'🥣',cost:500,lvl:6,d:'Feeds hungry friends for you!',fx:{auto:1}},
+ bubbler2:{n:'Bubble Party',e:'✨',cost:350,lvl:7,d:'Bubbles everywhere!',req:'bubbler1',fx:{bub:2}},
+ net:{n:'Golden Net',e:'🥅',cost:600,lvl:8,d:'Coin bubbles worth double!',fx:{val:2}},
+ heater2:{n:'Spa Heater',e:'♨️',cost:600,lvl:9,d:'Extra cozy! +10 happy',req:'heater1',fx:{happy:10}},
+ lamp3:{n:'Disco Light',e:'🪩',cost:1000,lvl:10,d:'+50% star points!',req:'lamp2',fx:{xp:1.5},light:'#c0a0ff'},
+ filter3:{n:'Mega Filter',e:'🌊',cost:900,lvl:12,d:'Almost no algae!',req:'filter2',fx:{algae:.5}}
+};
+const TANKS=[
+ {n:'Tiny Bowl',cost:0,lvl:1},{n:'Small Tank',cost:200,lvl:2},{n:'Cozy Tank',cost:500,lvl:4},{n:'Big Tank',cost:1200,lvl:6},
+ {n:'Giant Tank',cost:2500,lvl:9},{n:'Mega Tank',cost:5000,lvl:12},{n:'Ocean Room',cost:10000,lvl:15},{n:'Magic Ocean',cost:20000,lvl:18}];
+const capOf=i=>4+2*i, slotsOf=i=>5+2*i;
+const THEMES=[
+ {id:'aqua',n:'Sky Blue',e:'💙',c1:'#bdeaff',c2:'#7fc8f8',cost:0,lvl:1},
+ {id:'pink',n:'Bubblegum',e:'💗',c1:'#ffd6ea',c2:'#f9a3cf',cost:150,lvl:3},
+ {id:'mint',n:'Minty',e:'💚',c1:'#c8f7e4',c2:'#7fdcb8',cost:150,lvl:3},
+ {id:'lilac',n:'Lilac Dream',e:'💜',c1:'#e3d4ff',c2:'#b69af0',cost:300,lvl:6},
+ {id:'sunset',n:'Sunset',e:'🧡',c1:'#ffe3b3',c2:'#ff9fb0',cost:500,lvl:9},
+ {id:'night',n:'Starry Night',e:'🌙',c1:'#7a8bd8',c2:'#3f3d8f',cost:800,lvl:12}];
+const STAGES=[{l:1,n:'Tiny Baby',s:1},{l:3,n:'Little Axie',s:1.2},{l:6,n:'Happy Axie',s:1.45},{l:10,n:'Big Axie',s:1.7},{l:15,n:'Royal Axie',s:1.95},{l:20,n:'Rainbow Axie',s:2.2}];
+const DAILY_T=[
+ {k:'fed',t:'Feed your friends',a:[3,5,8]},{k:'cleaned',t:'Clean yucky spots',a:[4,6,10]},
+ {k:'pet',t:'Pet your friends',a:[5,8,12]},{k:'collected',t:'Pop coin bubbles',a:[3,5,7]},{k:'bought',t:'Buy something new',a:[1,2]}];
+const QUESTS=[
+ {id:'q1',k:'fed',n:1,t:'Feed your friends 🍤',c:20},{id:'q2',k:'cleaned',n:3,t:'Clean 3 yucky spots 🧽',c:30},
+ {id:'q3',k:'pet',n:3,t:'Pet friends 3 times 💗',c:30},{id:'q4',k:'collected',n:3,t:'Pop 3 coin bubbles 🪙',c:40},
+ {id:'q5',k:'petB',n:1,t:'Buy a new friend 🐠',c:50},{id:'q6',k:'decorB',n:1,t:'Buy a decoration 🌿',c:50},
+ {id:'q7',k:'gearB',n:1,t:'Buy a gadget 🔧',c:80,g:1},{id:'q8',k:'level',n:5,t:'Reach Level 5 ⭐',c:150,g:2},
+ {id:'q9',k:'petCount',n:5,t:'Have 5 friends 🐾',c:150,g:2},{id:'q10',k:'fed',n:30,t:'Feed 30 times 🍤',c:150},
+ {id:'q11',k:'cleaned',n:60,t:'Clean 60 spots 🧽',c:250,g:2},{id:'q12',k:'level',n:10,t:'Reach Level 10 🌟',c:500,g:5},
+ {id:'q13',k:'petCount',n:10,t:'Have 10 friends 🐳',c:500,g:5},{id:'q14',k:'collected',n:50,t:'Pop 50 coin bubbles 🪙',c:400,g:3},
+ {id:'q15',k:'level',n:20,t:'Reach Level 20 👑',c:2000,g:15}];
+const SPECIALS=[['decor','sp_castle'],['pet','sp_rainbow'],['decor','sp_crystal'],['decor','sp_unicorn'],['pet','sp_gold'],['decor','sp_trophy']];
+const DAYREW=[{c:50,g:0},{c:80,g:1},{c:120,g:2},{c:150,g:3},{c:200,g:3},{c:250,g:5},{c:300,g:10,sp:1}];
+
+/* ============ STATE ============ */
+let S;
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const yest=()=>{const d=new Date(Date.now()-864e5);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+let uidc=1;
+function newPet(type,name){return {uid:Date.now()+'_'+(uidc++),type,name:name||PETS[type].n,xp:0,lvl:1,happy:80,hunger:30}}
+function fresh(){return {v:1,coins:60,gems:3,xp:0,lvl:1,tank:0,theme:'aqua',pets:[newPet('axolotl','Axie')],decor:[],gear:{},themes:{aqua:1},
+ stats:{fed:0,cleaned:0,pet:0,collected:0,bought:0,petB:0,decorB:0,gearB:0},streak:0,lastLogin:'',claimed:false,tutor:false,mute:false,
+ day:'',daily:{fed:0,cleaned:0,pet:0,collected:0,bought:0},dm:[],dmClaimed:[],dmBonus:false,qClaimed:[]}}
+function load(){try{const r=localStorage.getItem(SAVE);if(r){const o=JSON.parse(r);S=Object.assign(fresh(),o);S.stats=Object.assign(fresh().stats,o.stats||{});return}}catch(e){}S=fresh()}
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
+function stat(k){if(k==='level')return S.lvl;if(k==='petCount')return S.pets.length;return S.stats[k]||0}
+function fx(){const f={algae:1,xp:1,happy:0,bub:0,rate:1,val:1,auto:false};
+ for(const id in S.gear){const g=GEAR[id];if(!g)continue;const x=g.fx;
+  if(x.algae)f.algae*=x.algae;if(x.xp)f.xp=Math.max(f.xp,x.xp);if(x.happy)f.happy+=x.happy;if(x.bub)f.bub+=x.bub;
+  if(x.rate)f.rate+=x.rate;if(x.val)f.val=Math.max(f.val,x.val);if(x.auto)f.auto=true}return f}
+const tankNeed=l=>40+l*35+l*l*5;
+const petNeed=l=>20+l*15;
+const stageOf=()=>{let s=0;STAGES.forEach((st,i)=>{if(S.lvl>=st.l)s=i});return s};
+
+/* ============ AUDIO ============ */
+let AC=null;
+function audio(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume()}
+function tone(f,d,type,v,slide,delay){if(S.mute||!AC)return;try{const t=AC.currentTime+(delay||0),o=AC.createOscillator(),g=AC.createGain();
+ o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.1,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d);
+ o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.05)}catch(e){}}
+const SND={
+ pop:()=>tone(500,.12,'sine',.12,900),coin:()=>{tone(880,.1,'triangle',.1);tone(1320,.18,'triangle',.1,0,.08)},
+ feed:()=>{tone(400,.1,'sine',.08,700);tone(600,.1,'sine',.08,900,.1)},
+ clean:()=>tone(300,.25,'sine',.08,1200),buy:()=>{tone(660,.1,'triangle',.1);tone(880,.1,'triangle',.1,0,.1);tone(1100,.2,'triangle',.1,0,.2)},
+ no:()=>tone(220,.2,'sine',.1,150),pet:()=>tone(700,.2,'sine',.08,1000),
+ level:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,.3,'triangle',.12,0,i*.12))};
+function setMute(m){S.mute=m;$('mute').textContent=m?'🔇':'🔊';save()}
+
+/* ============ UI HELPERS ============ */
+const tank=$('tank');let TW=600,TH=400;
+function measure(){TW=$('crs').clientWidth;TH=$('crs').clientHeight}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),2200)}
+function pop(x,y,txt){const p=document.createElement('div');p.className='pop';p.textContent=txt;p.style.left=Math.max(4,Math.min(TW-80,x-20))+'px';p.style.top=y+'px';$('pops').appendChild(p);setTimeout(()=>p.remove(),1100)}
+function hud(){$('lvltxt').textContent='⭐ Level '+S.lvl;const n=tankNeed(S.lvl);$('xptxt').textContent=Math.floor(S.xp)+' / '+n;$('xpbar').style.width=Math.min(100,S.xp/n*100)+'%';
+ $('coins').textContent=Math.floor(S.coins);$('gems').textContent=S.gems;$('tname').textContent='🏠 '+TANKS[S.tank].n+' · '+S.pets.length+'/'+capOf(S.tank)+' friends';
+ const g=Object.keys(S.gear).map(i=>GEAR[i]&&GEAR[i].e).join('');$('gearbar').textContent=g;
+ let dm=S.dm.some(m=>!S.dmClaimed.includes(m.id)&&stat2(m)>=m.n)||(!S.dmBonus&&S.dm.every(m=>S.dmClaimed.includes(m.id)))||QUESTS.some(q=>!S.qClaimed.includes(q.id)&&stat(q.k)>=q.n);
+ $('dMis').classList.toggle('on',dm);$('dDay').classList.toggle('on',!S.claimed);}
+const stat2=m=>S.daily[m.k]||0;
+function applyTheme(){const t=THEMES.find(x=>x.id===S.theme)||THEMES[0];document.documentElement.style.setProperty('--c1',t.c1);document.documentElement.style.setProperty('--c2',t.c2)}
+function applyLight(){let c=null;for(const id of ['lamp3','lamp2','lamp1']){if(S.gear[id]){c=GEAR[id].light;break}}const l=$('light');l.style.background=c||'transparent';l.style.opacity=c?.8:0}
+
+/* ============ XP / COINS ============ */
+function addCoins(n){S.coins+=n;hud()}
+function addXP(n){n*=fx().xp;S.xp+=n;let up=false;
+ while(S.xp>=tankNeed(S.lvl)){S.xp-=tankNeed(S.lvl);S.lvl++;up=true;const c=50*S.lvl,g=S.lvl%5===0?5:0;S.coins+=c;S.gems+=g;levelUp(c,g)}
+ hud();if(up)save()}
+function levelUp(c,g){SND.level();confetti();const unl=[];
+ [PETS,DECOR,GEAR].forEach(D=>{for(const id in D){if(!D[id].special&&D[id].lvl===S.lvl)unl.push((D[id].e||'🐴')+' '+D[id].n)}});
+ TANKS.forEach(t=>{if(t.lvl===S.lvl&&t.cost)unl.push('🏠 '+t.n)});
+ const st=STAGES.find(s=>s.l===S.lvl);
+ modal('🎉 Level '+S.lvl+'!',`<div class="slide"><div class="big-em">${axoSVG(stageOf(),90)}</div>
+ ${st?`<p>Axie grew up! She is now a <b>${st.n}</b>! 💖</p>`:'<p>Yay! Your tank is growing! 💖</p>'}
+ <p>You got 🪙 ${c}${g?' and 💎 '+g:''}</p>${unl.length?'<p style="font-size:19px">New in the shop:<br>'+unl.join(' &nbsp; ')+'</p>':''}
+ <button class="btn green" onclick="closeModal()">Hooray!</button></div>`);
+ renderAxo();}
+function petXP(p,n){p.xp+=n;while(p.xp>=petNeed(p.lvl)){p.xp-=petNeed(p.lvl);p.lvl++;const c=10*p.lvl;S.coins+=c;SND.level();
+  toast('🎉 '+p.name+' is now Level '+p.lvl+'! +'+c+' 🪙');const cr=CR.find(x=>x.p===p);if(cr){pop(cr.x,cr.y-30,'LEVEL UP!');cr.el.style.fontSize='';sizeCr(cr)}}}
+
+/* ============ ART ============ */
+function axoSVG(stage,px){const rb=stage>=5;const body=stage>=4?'#ffb0d8':'#ffb3d1',belly='#ffe0ee';
+ const gc=(i)=>rb?['#ff7aa8','#ffb347','#7fe0a0','#7fc8f8','#c39bff','#ff7aa8'][i%6]:'#ff6fa3';
+ const gills=[[84,28,68,8],[91,25,86,3],[98,25,104,5],[80,40,62,30]].map((g,i)=>`<line x1="${g[0]}" y1="${g[1]}" x2="${g[2]}" y2="${g[3]}" stroke="${gc(i)}" stroke-width="5" stroke-linecap="round"/><circle cx="${g[2]}" cy="${g[3]}" r="5" fill="${gc(i)}"/><circle cx="${g[2]-5}" cy="${g[3]-3}" r="3.5" fill="${gc(i+1)}"/><circle cx="${g[2]+5}" cy="${g[3]-3}" r="3.5" fill="${gc(i+2)}"/>`).join('');
+ let acc='';
+ if(stage===1)acc='<g transform="translate(96 22)"><circle r="4" cx="0" cy="-5" fill="#fff"/><circle r="4" cx="5" cy="0" fill="#fff"/><circle r="4" cx="0" cy="5" fill="#fff"/><circle r="4" cx="-5" cy="0" fill="#fff"/><circle r="3" fill="#ffd966"/></g>';
+ if(stage===2||stage===3)acc='<g transform="translate(100 22)"><path d="M0 0 L-14 -8 L-14 8Z M0 0 L14 -8 L14 8Z" fill="#7fc8f8"/><circle r="4" fill="#4aa3e0"/></g>';
+ if(stage>=4)acc+='<path d="M84 26 L88 8 L96 20 L104 6 L112 20 L118 10 L120 28Z" fill="#ffd966" stroke="#e8b830" stroke-width="2" stroke-linejoin="round"/><circle cx="104" cy="12" r="3" fill="#ff6fa3"/>';
+ if(stage>=3)acc+='<text x="14" y="22" font-size="14">✨</text><text x="120" y="80" font-size="12">✨</text>';
+ return `<svg width="${px*1.5}" height="${px}" viewBox="0 0 140 90" style="overflow:visible"><g>
+ <path d="M34 48 Q6 28 4 52 Q6 74 36 58Z" fill="${body}"/><path d="M34 50 Q14 46 10 52" stroke="#ff8fb8" stroke-width="2" fill="none"/>
+ <ellipse cx="50" cy="73" rx="9" ry="5.5" fill="${body}"/><ellipse cx="88" cy="74" rx="9" ry="5.5" fill="${body}"/>
+ <ellipse cx="68" cy="52" rx="42" ry="24" fill="${body}"/><ellipse cx="68" cy="62" rx="32" ry="12" fill="${belly}"/>
+ ${gills}
+ <ellipse cx="98" cy="48" rx="28" ry="24" fill="${body}"/>
+ <circle cx="97" cy="42" r="5" fill="#3b2a50"/><circle cx="117" cy="42" r="5" fill="#3b2a50"/><circle cx="98.6" cy="40.4" r="1.8" fill="#fff"/><circle cx="118.6" cy="40.4" r="1.8" fill="#fff"/>
+ <ellipse cx="90" cy="54" rx="5" ry="3" fill="#ff8fb8" opacity=".7"/><ellipse cx="122" cy="54" rx="5" ry="3" fill="#ff8fb8" opacity=".7"/>
+ <path d="M101 55 Q107 62 113 55" stroke="#3b2a50" stroke-width="2.5" fill="none" stroke-linecap="round"/>${acc}</g></svg>`}
+function seahorseSVG(px){return `<svg width="${px*.7}" height="${px}" viewBox="0 0 40 60"><path d="M22 18 Q34 30 22 40 Q12 48 22 54 Q27 56 29 51" stroke="#ffb347" stroke-width="11" fill="none" stroke-linecap="round"/><circle cx="22" cy="13" r="10" fill="#ffb347"/><rect x="2" y="11" width="14" height="6" rx="3" fill="#ffb347"/><path d="M26 6 Q32 0 34 8" stroke="#ff8fb8" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="24" cy="11" r="2.6" fill="#3b2a50"/><circle cx="24.8" cy="10.2" r=".9" fill="#fff"/><path d="M10 26 Q4 30 10 34Z" fill="#ff8fb8"/><circle cx="28" cy="16" r="2.4" fill="#ff8fb8" opacity=".7"/></svg>`}
+
+/* ============ CREATURES ============ */
+let CR=[];
+function sizeOf(p){const d=PETS[p.type],m=Math.max(.85,Math.min(1.6,TW/620));if(p.type==='axolotl')return 50*m*STAGES[stageOf()].s;return d.sz*m*Math.min(1.5,1+(p.lvl-1)*.03)}
+function sizeCr(c){const sz=sizeOf(c.p);c.sz=sz;const d=PETS[c.p.type];
+ if(c.p.type==='axolotl'){c.inner.innerHTML=axoSVG(stageOf(),sz)}
+ else if(d.svg==='seahorse'){c.inner.innerHTML=seahorseSVG(sz)}
+ else{c.inner.style.fontSize=sz+'px';c.inner.textContent=d.e}
+ let f='';if(d.hue)f+=`hue-rotate(${d.hue}deg) `;if(d.sat)f+=`saturate(${d.sat})`;c.inner.style.filter=f?f:'';
+ if(c.p.type==='axolotl'||d.hue)c.inner.style.filter=f;}
+function renderAxo(){CR.forEach(c=>{if(c.p.type==='axolotl'||c.p.type==='goldaxo')sizeCr(c)})}
+function mkCr(p){const d=PETS[p.type];const el=document.createElement('div');el.className='cr';
+ const flip=document.createElement('div');flip.className='flip';const inner=document.createElement('div');inner.className='bob';
+ inner.style.animationDelay=(-Math.random()*2)+'s';flip.appendChild(inner);el.appendChild(flip);
+ const tag=document.createElement('div');tag.className='tag';el.appendChild(tag);
+ const hg=document.createElement('div');hg.className='hungry';hg.textContent='🍽️';hg.style.display='none';el.appendChild(hg);
+ $('crs').appendChild(el);
+ const c={p,el,flip,inner,tag,hg,x:TW*(.15+Math.random()*.7),y:TH*(.2+Math.random()*.5),tx:0,ty:0,wait:0,dir:1,sz:40,t:Math.random()*10};
+ el.addEventListener('pointerdown',e=>{e.preventDefault();audio();petIt(c)});sizeCr(c);newTarget(c);CR.push(c);return c}
+function floorY(c){return TH-TH*.12*.55-c.sz*.5}
+function newTarget(c){const d=PETS[c.p.type];c.tx=c.sz/2+Math.random()*(TW-c.sz);
+ if(d.t==='floor'){c.ty=floorY(c)}else if(d.t==='float'){c.ty=TH*.15+Math.random()*TH*.5}else c.ty=TH*.12+Math.random()*(TH*.62);c.wait=Math.random()*2.5}
+function updCr(c,dt){const d=PETS[c.p.type];c.t+=dt;const sp=d.sp*(0.6+c.p.happy/200)*(TW/700+.4);
+ if(d.t==='floor')c.ty=floorY(c);
+ if(c.wait>0){c.wait-=dt}else{const dx=c.tx-c.x,dy=c.ty-c.y,dist=Math.hypot(dx,dy);
+  if(dist<6){newTarget(c)}else{const st=Math.min(dist,sp*dt);c.x+=dx/dist*st;c.y+=dy/dist*st;if(Math.abs(dx)>3)c.dir=dx>0?1:-1}}
+ if(d.t==='float')c.y+=Math.sin(c.t*2)*.25;
+ if(d.t==='floor')c.y=floorY(c);
+ c.x=Math.max(c.sz/2,Math.min(TW-c.sz/2,c.x));c.y=Math.max(c.sz/2,Math.min(TH-c.sz/2,c.y));
+ c.el.style.transform=`translate(${(c.x-c.sz/2).toFixed(1)}px,${(c.y-c.sz/2).toFixed(1)}px)`;
+ c.flip.style.transform=`scaleX(${(c.dir>0)===(d.face==='r')?1:-1})`}
+function refreshTags(){CR.forEach(c=>{const p=c.p;c.tag.textContent=p.name+' · Lv'+p.lvl+(p.happy>70?' 😊':p.happy>40?' 🙂':' 😢');c.hg.style.display=p.hunger>60?'block':'none'})}
+function syncCr(){const have=new Set(CR.map(c=>c.p));S.pets.forEach(p=>{if(!have.has(p))mkCr(p)});}
+const lastPet={};
+function petIt(c){const p=c.p,n=Date.now();pop(c.x,c.y-c.sz/2-10,'💗');
+ if(lastPet[p.uid]&&n-lastPet[p.uid]<2500){SND.pop();return}lastPet[p.uid]=n;SND.pet();
+ p.happy=Math.min(100,p.happy+6);petXP(p,3);S.stats.pet++;S.daily.pet++;addXP(1);toast(p.name+' loves it! Lv'+p.lvl+' 💖');refreshTags();hud()}
+
+/* ============ TASKS: feed, clean, coins ============ */
+function feed(auto){const hungry=S.pets.filter(p=>p.hunger>(auto?50:30));
+ if(!auto){audio();if(!hungry.length){SND.no();toast('Everyone is full! 😋 Try again later');return}
+  for(let i=0;i<8;i++){const f=document.createElement('div');f.className='flake';f.textContent=Math.random()<.5?'🟤':'🟠';f.style.left=(10+Math.random()*80)+'%';f.style.animationDelay=(Math.random()*.5)+'s';$('food').appendChild(f);setTimeout(()=>f.remove(),2300)}
+  SND.feed()}
+ let tot=0;setTimeout(()=>{hungry.forEach(p=>{p.hunger=0;p.happy=Math.min(100,p.happy+10);petXP(p,auto?3:10);tot++;const c=CR.find(x=>x.p===p);if(c&&!auto)pop(c.x,c.y-20,'Yum! +10')});
+  if(!auto){S.stats.fed++;S.daily.fed++;addXP(2+tot*2);addCoins(tot);toast('Yummy! 😋 +'+tot+' 🪙')}else{addXP(tot)}
+  refreshTags();hud();save()},auto?0:900)}
+function spawnAlgae(){const a=$('algae');if(a.children.length>=8)return;const d=document.createElement('div');d.className='algae';
+ d.style.left=(3+Math.random()*(88))+'%';d.style.top=(8+Math.random()*60)+'%';d.textContent='';
+ d.addEventListener('pointerdown',e=>{e.preventDefault();audio();if(d.classList.contains('gone'))return;d.classList.add('gone');SND.clean();
+  S.stats.cleaned++;S.daily.cleaned++;addXP(3);addCoins(2);const r=d.getBoundingClientRect(),tr=tank.getBoundingClientRect();pop(r.left-tr.left,r.top-tr.top,'✨ +2');
+  setTimeout(()=>d.remove(),400);hud();dirtyUpd()});a.appendChild(d);dirtyUpd()}
+let dirty=0;function dirtyUpd(){dirty=$('algae').querySelectorAll('.algae:not(.gone)').length}
+function spawnCoin(){const box=$('coinsl');if(box.children.length>=5||!CR.length)return;const c=CR[Math.floor(Math.random()*CR.length)];
+ const b=document.createElement('div');b.className='cbub';b.textContent='🪙';b.style.left=Math.max(4,Math.min(TW-56,c.x-26))+'px';b.style.top=Math.max(4,c.y-60)+'px';
+ const val=Math.round((4+S.lvl*1.5)*fx().val);
+ b.addEventListener('pointerdown',e=>{e.preventDefault();audio();if(b.dataset.d)return;b.dataset.d=1;SND.coin();addCoins(val);S.stats.collected++;S.daily.collected++;addXP(1);
+  pop(parseFloat(b.style.left),parseFloat(b.style.top),'+'+val+' 🪙');b.remove();hud()});
+ box.appendChild(b);setTimeout(()=>b.remove(),22000)}
+function bubble(){const b=document.createElement('div');b.className='bub';const s=6+Math.random()*16;b.style.width=b.style.height=s+'px';b.style.left=Math.random()*100+'%';
+ const dur=6+Math.random()*6;b.style.animationDuration=dur+'s';$('bubs').appendChild(b);setTimeout(()=>b.remove(),dur*1000)}
+
+/* ============ DECOR ============ */
+function renderDecor(){$('decor').innerHTML='';S.decor.forEach(d=>{const D=DECOR[d.id];if(!D)return;const e=document.createElement('div');e.className='decor';e.textContent=D.e;
+ e.style.fontSize=D.sz+'px';e.style.left=d.x+'%';e.style.bottom=(5+d.z)+'%';if(D.hue)e.style.filter='hue-rotate('+D.hue+'deg)';e.style.animationDelay=(-Math.random()*4)+'s';$('decor').appendChild(e)})}
+function addDecor(id){const i=S.decor.length;S.decor.push({id,x:Math.round((6+i*37.7)%84+3),z:(i%3)*3});renderDecor()}
+
+/* ============ MODAL ============ */
+function modal(t,html){$('mt').textContent=t;$('mb').innerHTML=html;$('modal').classList.add('on');audio()}
+function closeModal(){$('modal').classList.remove('on');$('mb').innerHTML='';curView=null}
+$('mx').onclick=closeModal;$('modal').addEventListener('pointerdown',e=>{if(e.target===$('modal'))closeModal()});
+let curView=null;
+function bar(v,max){return `<div class="bar" style="height:10px"><i style="width:${Math.min(100,v/max*100)}%"></i></div>`}
+
+/* ---- Shop ---- */
+let shopTab='pets';
+function openShop(tab){if(tab)shopTab=tab;curView='shop';const tabs=[['pets','🐠 Friends'],['decor','🌿 Decor'],['gear','🔧 Gadgets'],['tank','🏠 Tank'],['gems','💎 Gems']];
+ let h='<div class="tabs">'+tabs.map(t=>`<button class="tab ${t[0]===shopTab?'on':''}" data-t="${t[0]}">${t[1]}</button>`).join('')+'</div><div class="grid">';
+ const card=(em,n,d,price,state,act)=>`<div class="item ${state==='lock'?'lock':''}"><div class="em">${em}</div><b>${n}</b><small>${d}</small>${act}</div>`;
+ const buy=(cost,gem,id,lvl,ok)=>S.lvl<lvl?`<button class="btn gray" disabled>🔒 Level ${lvl}</button>`:ok===false?`<button class="btn gray" disabled>Owned ✔</button>`:`<button class="btn" data-buy="${id}">${gem?'💎':'🪙'} ${cost}</button>`;
+ if(shopTab==='pets'){for(const id in PETS){const d=PETS[id];if(d.special||id==='axolotl'||d.gem)continue;h+=card(d.svg?seahorseSVG(44):`<span style="${d.hue?'filter:hue-rotate('+d.hue+'deg)':''}">${d.e}</span>`,d.n,d.d,0,S.lvl<d.lvl?'lock':'',buy(d.cost,0,'pet:'+id,d.lvl))}}
+ else if(shopTab==='decor'){h+=`<div style="grid-column:1/-1;font-weight:800">Decorations: ${S.decor.length}/${slotsOf(S.tank)} spots</div>`;for(const id in DECOR){const d=DECOR[id];if(d.special)continue;h+=card(d.e,d.n,d.d,0,S.lvl<d.lvl?'lock':'',buy(d.cost,0,'decor:'+id,d.lvl))}}
+ else if(shopTab==='gear'){for(const id in GEAR){const d=GEAR[id];const owned=!!S.gear[id];const needReq=d.req&&!S.gear[d.req];
+  h+=card(d.e,d.n,d.d,0,S.lvl<d.lvl?'lock':'',owned?'<button class="btn gray" disabled>Owned ✔</button>':needReq?`<button class="btn gray" disabled>Need ${GEAR[d.req].n}</button>`:buy(d.cost,0,'gear:'+id,d.lvl))}}
+ else if(shopTab==='tank'){TANKS.forEach((t,i)=>{if(i===0)return;const st=i<=S.tank?'<button class="btn gray" disabled>Owned ✔</button>':i>S.tank+1?'<button class="btn gray" disabled>Buy previous first</button>':buy(t.cost,0,'tank:'+i,t.lvl);
+  h+=card('🏠',t.n,'Room for '+capOf(i)+' friends & '+slotsOf(i)+' decorations',0,S.lvl<t.lvl?'lock':'',st)});
+  h+='<div style="grid-column:1/-1;font-weight:900;font-size:20px;margin-top:6px">🎨 Water Colors</div>';
+  THEMES.forEach(t=>{const own=S.themes[t.id];h+=card(t.e,t.n,'Change the water!',0,S.lvl<t.lvl&&!own?'lock':'',own?(S.theme===t.id?'<button class="btn gray" disabled>Using ✔</button>':`<button class="btn green" data-theme="${t.id}">Use</button>`):buy(t.cost,0,'theme:'+t.id,t.lvl))});
+  h+=`<div class="item"><div class="em">🍬</div><b>Yummy Treat</b><small>Everyone gets a snack and big XP!</small><button class="btn" data-buy="treat:1">🪙 40</button></div>`}
+ else if(shopTab==='gems'){const g=(em,n,d,cost,id,lv)=>card(em,n,d,0,S.lvl<(lv||1)?'lock':'',S.lvl<(lv||1)?`<button class="btn gray" disabled>🔒 Level ${lv}</button>`:`<button class="btn" data-buy="${id}">💎 ${cost}</button>`);
+  h+=g('🪙','Coin Bag','Get 150 coins',5,'gem:c1')+g('💰','Big Coin Bag','Get 800 coins',20,'gem:c2')+g('🏆','Huge Coin Chest','Get 5000 coins',100,'gem:c3',5);
+  for(const id of ['gold','goldaxo','mermaid']){const d=PETS[id];h+=g(`<span style="${d.hue?'filter:hue-rotate('+d.hue+'deg)':''}">${d.e}</span>`,d.n,d.d,d.cost,'pet:'+id,d.lvl)}}
+ h+='</div>';$('mb').innerHTML=h;$('mt').textContent='🛍️ Shop';$('modal').classList.add('on');
+ $('mb').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{shopTab=b.dataset.t;const sc=$('mb').scrollTop;openShop();SND.pop()});
+ $('mb').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>doBuy(b.dataset.buy));
+ $('mb').querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{S.theme=b.dataset.theme;applyTheme();save();SND.pop();openShop()})}
+function pay(cost,gem){if(gem){if(S.gems<cost){SND.no();toast('Not enough 💎 gems yet!');return false}S.gems-=cost}else{if(S.coins<cost){SND.no();toast('Not enough 🪙 coins yet! Do missions or pop coin bubbles!');return false}S.coins-=cost}return true}
+function doBuy(k){const [kind,id]=k.split(':');
+ if(kind==='pet'){const d=PETS[id];if(S.pets.length>=capOf(S.tank)){SND.no();toast('Tank is full! Buy a bigger tank 🏠');return}if(!pay(d.cost,d.gem))return;
+  const p=newPet(id);S.pets.push(p);S.stats.petB++;S.stats.bought++;S.daily.bought++;syncCr();addXP(15);toast('Welcome '+d.n+'! 🎉')}
+ else if(kind==='decor'){if(S.decor.length>=slotsOf(S.tank)){SND.no();toast('No more room! Buy a bigger tank 🏠');return}if(!pay(DECOR[id].cost))return;
+  addDecor(id);S.stats.decorB++;S.stats.bought++;S.daily.bought++;addXP(10);toast('Pretty! '+DECOR[id].n+' added ✨')}
+ else if(kind==='gear'){if(!pay(GEAR[id].cost))return;S.gear[id]=1;S.stats.gearB++;S.stats.bought++;S.daily.bought++;addXP(25);applyLight();toast('Got '+GEAR[id].n+'! 🔧')}
+ else if(kind==='tank'){const i=+id;if(!pay(TANKS[i].cost))return;S.tank=i;S.stats.bought++;S.daily.bought++;addXP(50);toast('Your tank grew bigger! 🏠')}
+ else if(kind==='theme'){const t=THEMES.find(x=>x.id===id);if(!pay(t.cost))return;S.themes[id]=1;S.theme=id;applyTheme();S.stats.bought++;S.daily.bought++;addXP(10)}
+ else if(kind==='treat'){if(!pay(40))return;S.pets.forEach(p=>{p.hunger=0;p.happy=100;petXP(p,15)});addXP(10);toast('Treat time! 🍬')}
+ else if(kind==='gem'){const o={c1:[5,150],c2:[20,800],c3:[100,5000]}[id];if(!pay(o[0],true))return;S.coins+=o[1];toast('+'+o[1]+' 🪙!')}
+ SND.buy();hud();save();refreshTags();openShop()}
+
+/* ---- Friends ---- */
+function openPets(){curView='pets';let h='<p class="center" style="font-weight:800;font-size:18px;margin:0 0 8px">Tap a friend in the tank to pet them 💗 · Tap ✏️ to rename</p>';
+ S.pets.forEach(p=>{const d=PETS[p.type];const hearts=Math.round(p.happy/20);h+=`<div class="row2"><div class="em">${p.type==='axolotl'?axoSVG(stageOf(),36):d.svg?seahorseSVG(38):`<span style="${d.hue?'filter:hue-rotate('+d.hue+'deg)':''}">${d.e}</span>`}</div>
+ <div class="grow">${p.name} <small>(${d.n})</small><br>Level ${p.lvl} ${bar(p.xp,petNeed(p.lvl))}<span class="hearts">${'💗'.repeat(hearts)}${'🤍'.repeat(5-hearts)}</span> ${p.hunger>60?'🍽️ hungry':''}</div>
+ <button class="sbtn" data-r="${p.uid}">✏️</button></div>`});
+ if(S.pets[0]){const st=stageOf();h+=`<p class="center" style="font-weight:800">Axie is a <b>${STAGES[st].n}</b>${STAGES[st+1]?'. Reach tank Level '+STAGES[st+1].l+' to grow again!':'! She is all grown up! 🌈'}</p>`}
+ $('mb').innerHTML=h;$('mt').textContent='🐾 My Friends';$('modal').classList.add('on');
+ $('mb').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const p=S.pets.find(x=>x.uid===b.dataset.r);const n=prompt('New name?',p.name);if(n&&n.trim()){p.name=n.trim().slice(0,12);save();refreshTags();openPets()}})}
+
+/* ---- Missions ---- */
+function genDaily(){const seed=today().split('-').reduce((a,b)=>a*31+ +b,7);let r=seed;const rnd=()=>{r=(r*1103515245+12345)&0x7fffffff;return r/0x7fffffff};
+ const pool=DAILY_T.slice();const out=[];for(let i=0;i<3;i++){const t=pool.splice(Math.floor(rnd()*pool.length),1)[0];const tier=Math.min(t.a.length-1,Math.floor(S.lvl/7));const pick=Math.min(t.a.length-1,Math.floor(rnd()*(tier+2)));
+  out.push({id:'d'+i,k:t.k,n:t.a[pick],t:t.t,c:40+pick*30+i*10,g:1})}return out}
+function openMissions(){curView='mis';let h='<div style="font-weight:900;font-size:21px;margin-bottom:6px">☀️ Today\'s Missions</div>';
+ S.dm.forEach(m=>{const v=Math.min(m.n,stat2(m)),done=v>=m.n,cl=S.dmClaimed.includes(m.id);
+  h+=`<div class="row2"><div class="grow">${m.t} <small>(${v}/${m.n})</small>${bar(v,m.n)}</div>${cl?'<b>✔</b>':done?`<button class="btn green" data-c="${m.id}">🪙${m.c} 💎${m.g}</button>`:`<span style="font-weight:800">🪙${m.c} 💎${m.g}</span>`}</div>`});
+ const all=S.dm.every(m=>S.dmClaimed.includes(m.id));
+ h+=`<div class="row2"><div class="grow">🎁 Finish all 3 for a bonus chest!</div>${S.dmBonus?'<b>✔</b>':all?'<button class="btn green" data-bonus="1">Open! 💎5</button>':'<span>💎5 🪙150</span>'}</div>`;
+ h+='<div style="font-weight:900;font-size:21px;margin:14px 0 6px">⭐ Big Goals</div>';
+ const qs=QUESTS.filter(q=>!S.qClaimed.includes(q.id)).slice(0,6);
+ qs.forEach(q=>{const v=Math.min(q.n,stat(q.k)),done=v>=q.n;h+=`<div class="row2"><div class="grow">${q.t} <small>(${v}/${q.n})</small>${bar(v,q.n)}</div>${done?`<button class="btn green" data-q="${q.id}">🪙${q.c}${q.g?' 💎'+q.g:''}</button>`:`<span style="font-weight:800">🪙${q.c}${q.g?' 💎'+q.g:''}</span>`}</div>`});
+ if(!qs.length)h+='<p class="center">You did all the big goals! 🏆</p>';
+ $('mb').innerHTML=h;$('mt').textContent='📋 Missions';$('modal').classList.add('on');
+ $('mb').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const m=S.dm.find(x=>x.id===b.dataset.c);S.dmClaimed.push(m.id);reward(m.c,m.g);openMissions()});
+ $('mb').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const q=QUESTS.find(x=>x.id===b.dataset.q);S.qClaimed.push(q.id);reward(q.c,q.g||0);openMissions()});
+ $('mb').querySelectorAll('[data-bonus]').forEach(b=>b.onclick=()=>{S.dmBonus=true;reward(150,5);confetti();openMissions()})}
+function reward(c,g){S.coins+=c;S.gems+=g||0;SND.coin();addXP(5);toast('🎁 +'+c+' 🪙'+(g?' +'+g+' 💎':''));hud();save()}
+
+/* ---- Daily ---- */
+function openDaily(){curView='day';const di=(S.streak-1)%7;let h=`<div class="center" style="font-size:24px;font-weight:900">🔥 ${S.streak} day streak!</div><p class="center" style="font-weight:700;margin:4px">Come back every day for bigger prizes. Day 7 is a special surprise! 🎁</p><div class="days">`;
+ DAYREW.forEach((r,i)=>{h+=`<div class="day ${i===di&&!S.claimed?'cur':''} ${i<di||(i===di&&S.claimed)?'done':''}"><div>Day ${i+1}</div><div class="em">${r.sp?'🎁':'🪙'}</div>${r.c}🪙${r.g?'<br>'+r.g+'💎':''}</div>`});
+ h+='</div>'+(S.claimed?'<p class="center" style="font-size:20px;font-weight:800">✔ You got today\'s gift! See you tomorrow! 👋</p>':'<div class="center"><button class="btn green" id="claimD" style="font-size:24px;padding:14px 30px">🎁 Get Today\'s Gift!</button></div>');
+ $('mb').innerHTML=h;$('mt').textContent='🎁 Daily Gift';$('modal').classList.add('on');
+ const b=$('claimD');if(b)b.onclick=claimDaily}
+function claimDaily(){const di=(S.streak-1)%7,r=DAYREW[di];S.claimed=true;let extra='';
+ if(r.sp){const wk=Math.floor((S.streak-1)/7);const sp=SPECIALS[wk%SPECIALS.length];
+  if(sp[0]==='decor'){if(S.decor.some(d=>d.id===sp[1])){S.gems+=15;extra='You already had it, so here is 💎 15!'}else{addDecor(sp[1]);extra='✨ '+DECOR[sp[1]].n+' added to your tank!'}}
+  else{S.pets.push(newPet(sp[1]));syncCr();extra='✨ New friend: '+PETS[sp[1]].n+'!'}}
+ S.coins+=r.c;S.gems+=r.g;SND.level();confetti();hud();save();
+ $('mb').innerHTML=`<div class="slide"><div class="big-em">🎁</div><p>You got 🪙 ${r.c}${r.g?' and 💎 '+r.g:''}!</p><p>${extra}</p><button class="btn green" onclick="closeModal()">Yay!</button></div>`}
+
+/* ---- Tutorial ---- */
+const TUT=[
+ ()=>[axoSVG(0,80),'Hi Elysse! 👋','This is <b>Axie</b>, your axolotl! Take care of her and your tank, and she will <b>grow up</b>!'],
+ ()=>['🍤','Feed your friends','Tap the big <b>Feed</b> button when friends show a 🍽️. Yum yum!'],
+ ()=>['🧽','Clean the tank','Tap the <b>green yucky spots</b> to wipe them away. Clean water = happy friends!'],
+ ()=>['🪙','Get coins','Tap the floating 🪙 <b>coin bubbles</b> to collect coins. Tap your friends to pet them 💗'],
+ ()=>['🛍️','Go shopping!','Use coins in the <b>Shop</b> to buy new friends, pretty decorations and cool gadgets!'],
+ ()=>['⭐','Level up!','Everything you do fills the ⭐ bar. Level up to unlock more stuff and watch Axie grow!'],
+ ()=>['🎁','Come back daily!','Do <b>Missions</b> 📋 and open your <b>Daily Gift</b> 🎁 every day for 💎 gems and surprises!']];
+function openTutorial(i){i=i||0;curView='tut';const [em,t,p]=TUT[i]();
+ $('mb').innerHTML=`<div class="slide"><div class="big-em">${em}</div><div style="font-size:32px;font-weight:900;color:#e0589a">${t}</div><p>${p}</p>
+ <div class="dots">${TUT.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div>
+ <div style="display:flex;gap:10px;justify-content:center">${i?'<button class="btn gray" id="tb">⬅ Back</button>':''}<button class="btn green" id="tn">${i===TUT.length-1?"Let's play! 🎉":'Next ➡'}</button></div></div>`;
+ $('mt').textContent='How to play';$('modal').classList.add('on');
+ if($('tb'))$('tb').onclick=()=>{SND.pop();openTutorial(i-1)};
+ $('tn').onclick=()=>{SND.pop();if(i===TUT.length-1){S.tutor=true;save();closeModal();if(!S.claimed)setTimeout(openDaily,300)}else openTutorial(i+1)}}
+
+/* ============ CONFETTI ============ */
+function confetti(){const cv=$('confetti');cv.width=innerWidth;cv.height=innerHeight;const g=cv.getContext('2d');const ps=[];const cols=['#ff9ec7','#ffd966','#9be8c8','#7fc8f8','#c39bff'];
+ for(let i=0;i<110;i++)ps.push({x:innerWidth/2,y:innerHeight/3,vx:(Math.random()-.5)*14,vy:-Math.random()*12-3,c:cols[i%5],r:Math.random()*6+3,a:Math.random()*6});
+ let n=0;(function f(){g.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.35;p.a+=.2;g.fillStyle=p.c;g.save();g.translate(p.x,p.y);g.rotate(p.a);g.fillRect(-p.r,-p.r/2,p.r*2,p.r);g.restore()});
+  if(++n<120)requestAnimationFrame(f);else g.clearRect(0,0,cv.width,cv.height)})()}
+
+/* ============ DAILY ROLLOVER ============ */
+function rollover(){const t=today();if(S.lastLogin!==t){S.streak=(S.lastLogin===yest())?S.streak+1:1;S.lastLogin=t;S.claimed=false}
+ if(S.day!==t){S.day=t;S.daily={fed:0,cleaned:0,pet:0,collected:0,bought:0};S.dm=genDaily();S.dmClaimed=[];S.dmBonus=false}}
+
+/* ============ MAIN LOOP ============ */
+let last=performance.now(),acc={sec:0,algae:8,coin:6,bub:0,auto:0,save:0,hunger:0};
+function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;CR.forEach(c=>updCr(c,dt));
+ acc.sec+=dt;if(acc.sec>=1){const s=acc.sec;acc.sec=0;tick(s)}requestAnimationFrame(loop)}
+function tick(s){const f=fx();
+ S.pets.forEach(p=>{p.hunger=Math.min(100,p.hunger+.35*s);const target=Math.max(0,100-p.hunger*.5-dirty*6+f.happy-8);p.happy+=(target-p.happy)*.02*s;p.happy=Math.max(0,Math.min(100,p.happy))});
+ acc.algae-=s;if(acc.algae<=0){spawnAlgae();acc.algae=(18+Math.random()*14)/(1/f.algae)*(1);acc.algae=(18+Math.random()*14)/(1/f.algae)}
+ acc.coin-=s;if(acc.coin<=0){spawnCoin();const hp=S.pets.reduce((a,p)=>a+p.happy,0)/Math.max(1,S.pets.length);acc.coin=(16+Math.random()*10)/f.rate*(hp>60?1:1.6)}
+ acc.bub-=s;if(acc.bub<=0){bubble();acc.bub=1.6/(1+f.bub*1.5)}
+ if(f.auto){acc.auto+=s;if(acc.auto>=45){acc.auto=0;if(S.pets.some(p=>p.hunger>50))feed(true)}}
+ acc.save+=s;if(acc.save>=5){acc.save=0;save()}
+ acc.hunger+=s;if(acc.hunger>=3){acc.hunger=0;refreshTags();if(S.day!==today()){rollover();hud()}}
+ if(S.pets.every(p=>p.happy<30)&&S.pets.length)acc.sadmsg=1}
+
+/* ============ INIT ============ */
+function init(){load();rollover();applyTheme();applyLight();measure();setMute(S.mute);
+ addEventListener('resize',()=>{measure();CR.forEach(c=>{sizeCr(c);newTarget(c)})});
+ S.pets.forEach(mkCr);S.decor=S.decor.filter(d=>DECOR[d.id]);renderDecor();
+ for(let i=0;i<12;i++)setTimeout(bubble,i*150);spawnAlgae();setTimeout(spawnCoin,2500);
+ // offline progress
+ const off=S.lastSeen?Math.min(3600,(Date.now()-S.lastSeen)/1000):0;if(off>30){S.pets.forEach(p=>{p.hunger=Math.min(100,p.hunger+.35*off);p.happy=Math.max(25,p.happy-off*.01)});for(let i=0;i<Math.min(4,off/300);i++)spawnAlgae()}
+ setInterval(()=>{S.lastSeen=Date.now()},3000);addEventListener('pagehide',()=>{S.lastSeen=Date.now();save()});
+ $('bFeed').onclick=()=>feed(false);$('bShop').onclick=()=>{audio();SND.pop();openShop()};$('bMis').onclick=()=>{audio();SND.pop();openMissions()};
+ $('bDay').onclick=()=>{audio();SND.pop();openDaily()};$('bPets').onclick=()=>{audio();SND.pop();openPets()};
+ $('mute').onclick=()=>{audio();setMute(!S.mute);SND.pop()};$('help').onclick=()=>{audio();openTutorial(0)};
+ hud();refreshTags();requestAnimationFrame(loop);
+ if(!S.tutor)openTutorial(0);else if(!S.claimed)setTimeout(openDaily,500);
+ window.__game={S:()=>S,doBuy,feed,addXP}}
+init();
+</script></body></html>
