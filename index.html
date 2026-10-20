@@ -139,6 +139,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#d9f1ff;font-family:"B
   <button class="sbtn" id="bgBtn" aria-label="backdrops">🖼️</button>
   <button class="sbtn" id="mute" aria-label="sound">🔊</button>
   <button class="sbtn" id="help" aria-label="help">❓</button>
+  <button class="sbtn" id="setBtn" aria-label="parent settings">⚙️</button>
  </div>
  <div id="tank">
   <div class="layer" id="crs" style="z-index:1"></div>
@@ -1767,6 +1768,41 @@ function tick(s){const f=fx();
  acc.save+=s;if(acc.save>=5){acc.save=0;save()}
  zzzTick(s);acc.hunger+=s;if(acc.hunger>=3){acc.hunger=0;refreshTags();if(S.day!==today()||S.week!==weekKey()){rollover();hud()}}}
 
+/* ============ PARENT SAVE TRANSFER ============ */
+function openSettings(){modal('⚙️ For parents',`<div class="slide"><p>Grown-ups can keep a copy of this aquarium, or put a saved copy back.</p>
+ <div class="prow"><button class="btn green" id="exportSave" type="button">Export save</button><label class="btn" id="importSave" style="position:relative;display:inline-flex;align-items:center;justify-content:center">Import save<input id="importFile" type="file" accept="application/json,.json" style="position:absolute;inset:0;opacity:0"></label></div></div>`);
+ $('exportSave').onclick=()=>exportSave();
+ $('importFile').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)importSaveFile(f)}}
+function exportSave(){let data=null;try{save();const raw=localStorage.getItem(SAVE);data=raw?JSON.parse(raw):null}catch(e){toast('Could not read the save.');return}
+ if(!data||typeof data!=='object'){toast('Could not read the save.');return}
+ const payload={app:'elysse-aquarium',key:'elysse_aquarium_v1',exportedAt:new Date().toISOString(),data};
+ const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+ deliverSaveFile(blob,'aquarium-save.json')}
+function anchorDownload(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');
+ a.href=url;a.download=filename;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),4000)}
+function isiPadSafari(){const ua=navigator.userAgent||'';return /iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+function deliverSaveFile(blob,filename){const file=new File([blob],filename,{type:'application/json'});
+ const shareData={files:[file],title:filename};
+ const share=()=>{if(!navigator.share)return Promise.reject(new Error('no share'));
+  if(navigator.canShare&&!navigator.canShare(shareData))return Promise.reject(new Error('cannot share'));
+  return navigator.share(shareData)};
+ // iPad Safari ignores blob anchor downloads; fall back to the share sheet when it is available.
+ if(isiPadSafari()){share().then(()=>toast('Exported save!')).catch(err=>{if(err&&err.name==='AbortError')return;try{anchorDownload(blob,filename);toast('Exported save!')}catch(e){toast('Could not export the save.')}});return}
+ try{anchorDownload(blob,filename);toast('Exported save!')}
+ catch(e){share().then(()=>toast('Exported save!')).catch(()=>toast('Could not export the save.'))}}
+function importSaveFile(file){const reader=new FileReader();
+ reader.onerror=()=>toast('Could not read that file.');
+ reader.onload=()=>{let obj;try{obj=JSON.parse(String(reader.result||''))}catch(e){toast('That file is not a save.');return}
+  if(!obj||obj.app!=='elysse-aquarium'||obj.key!=='elysse_aquarium_v1'||typeof obj.exportedAt!=='string'||!obj.data||typeof obj.data!=='object'||Array.isArray(obj.data)){toast('That file is not an aquarium save.');return}
+  modal('⚙️ For parents',`<div class="slide"><p>Use this saved aquarium? This device will match the file.</p>
+   <div class="prow"><button class="btn green" id="importYes" type="button">Use this save</button><button class="btn gray" id="importNo" type="button">Not now</button></div></div>`);
+  $('importNo').onclick=()=>openSettings();
+  $('importYes').onclick=()=>applyImportedSave(obj.data)};
+ reader.readAsText(file)}
+function applyImportedSave(data){const raw=JSON.stringify(data);try{localStorage.setItem(SAVE,raw)}catch(e){toast('Could not store the save.');return}
+ window.save=function(){try{localStorage.setItem(SAVE,raw)}catch(e){}};location.reload()}
+
 /* ============ INIT ============ */
 function init(){load();algaeLoad();rollover();measure();init3D();bindInput();applyTheme();applyLight();setMute(S.mute);
  addEventListener('resize',()=>{resize3D()});if(window.ResizeObserver)new ResizeObserver(()=>resize3D()).observe(tank);
@@ -1779,6 +1815,7 @@ function init(){load();algaeLoad();rollover();measure();init3D();bindInput();app
  $('bgBtn').onclick=()=>{if(PL){SND.no();toast('Tap ✔ Place or ✖ Cancel first!');return}audio();SND.pop();openShop('bg')};$('dn').onclick=()=>{if(PL){SND.no();toast('Tap ✔ Place or ✖ Cancel first!');return}audio();SND.pop();openShop('bg')};
  $('cm').onclick=()=>{audio();SND.pop();setSponge(!A.spOn)};$('spBtn').onclick=()=>{audio();SND.pop();setSponge(!A.spOn)};
  $('mute').onclick=()=>{audio();setMute(!S.mute);SND.pop()};$('help').onclick=()=>{audio();openTutorial(0)};
+ $('setBtn').onclick=()=>{audio();openSettings()};
  hud();requestAnimationFrame(loop);
  S.hv=(S.hv||0)+1;refreshHints();
  if(!S.tutor)openTutorial(0);else if(!S.tut3)openTutorial(0,[5,6,7,8,12,13,14,19]);else if(!S.tut4)openTutorial(0,[12,13,14,19]);else if(!S.tut5)openTutorial(0,[15,16,17,18]);else if(!S.claimed)setTimeout(openDaily,500);
